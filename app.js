@@ -94,6 +94,35 @@ router.delete("/aluno/:id", async function (req, res, next) {
   }
 });
 
+router.post("/auth", async function (req, res, next) {
+  try {
+    const db = await connect();
+    const { email, password } = req.body;
+    const checkEmail = res.json(
+      await db.collection(process.env.DB_COLLECTION).findOne({
+        email,
+      })
+    );
+    if (!checkEmail) {
+      return res.status(404).json({ erro: "Email não encontrado" });
+    } else {
+      const checkPassword = await bcrypt.compare(
+        password,
+        checkEmail.hashPassword
+      );
+      if (!checkPassword) {
+        return res
+          .status(403)
+          .json({ erro: "Senha incorreta, não autorizado" });
+      } else {
+        return res.status(200).json({ message: "Logado com sucesso" });
+      }
+    }
+  } catch (ex) {
+    console.log(ex);
+    res.status(502).json({ erro: `${ex}` });
+  }
+});
 app.use("/", router);
 
 //inicia o servidor
