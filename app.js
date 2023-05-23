@@ -98,11 +98,10 @@ router.post("/auth", async function (req, res, next) {
   try {
     const db = await connect();
     const { email, password } = req.body;
-    const checkEmail = res.json(
-      await db.collection(process.env.DB_COLLECTION).findOne({
-        email,
-      })
-    );
+    const checkEmail = await db
+      .collection(process.env.DB_COLLECTION)
+      .findOne({ email });
+
     if (!checkEmail) {
       return res.status(404).json({ erro: "Email não encontrado" });
     } else {
