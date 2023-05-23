@@ -1,4 +1,5 @@
 require("dotenv").config();
+const bcrypt = require("bcrypt");
 
 //app.js
 const { MongoClient, ObjectId } = require("mongodb");
@@ -26,17 +27,6 @@ const router = express.Router();
 
 router.get("/", (req, res) => res.json({ message: "Funcionando!" }));
 
-// GET dog
-router.get("/dog", async function (req, res, next) {
-  try {
-    const apidog = await fetch("https://dog.ceo/api/breed/hound/list");
-    res.json(await apidog.json());
-  } catch (ex) {
-    console.log(ex);
-    res.status(400).json({ erro: `${ex}` });
-  }
-});
-
 /* GET aluno */
 router.get("/aluno/:id?", async function (req, res, next) {
   try {
@@ -58,9 +48,15 @@ router.get("/aluno/:id?", async function (req, res, next) {
 // POST /aluno
 router.post("/aluno", async function (req, res, next) {
   try {
-    const aluno = req.body;
+    const { email, password } = req.body;
+    const hashPassword = await bcrypt.hash(password, 10);
     const db = await connect();
-    res.json(await db.collection(process.env.DB_COLLECTION).insertOne(aluno));
+    res.json(
+      await db.collection(process.env.DB_COLLECTION).insertOne({
+        email,
+        hashPassword,
+      })
+    );
   } catch (ex) {
     console.log(ex);
     res.status(400).json({ erro: `${ex}` });
